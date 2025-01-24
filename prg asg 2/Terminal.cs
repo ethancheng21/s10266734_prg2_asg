@@ -13,40 +13,58 @@ namespace prg_asg_2
         public Dictionary<string, Flight> Flights { get; set; } = new Dictionary<string, Flight>();
         public Dictionary<string, BoardingGate> BoardingGates { get; set; } = new Dictionary<string, BoardingGate>();
         public Dictionary<string, double> GateFees { get; set; } = new Dictionary<string, double>();
-
+        public Terminal() { }
         public Terminal(string terminalName)
         {
             TerminalName = terminalName;
+            Airlines = new Dictionary<string, Airline>();
+            Flights = new Dictionary<string, Flight>();
+            BoardingGates = new Dictionary<string, BoardingGate>();
+            GateFees = new Dictionary<string, double>();
         }
 
         public bool AddAirline(Airline airline)
         {
-            if (!Airlines.ContainsKey(airline.Code))
+            // Check if the airline already exists using iteration
+            foreach (var existingAirline in Airlines.Values)
             {
-                Airlines[airline.Code] = airline;
-                return true;
+                if (existingAirline.Code == airline.Code)
+                {
+                    return false; // Airline already exists
+                }
             }
-            return false;
+            Airlines.Add(airline.Code, airline);
+            return true;
         }
-
-        public bool AddBoardingGate(BoardingGate boardingGate)
+        public bool AddBoardingGate(BoardingGate gate)
         {
-            if (!BoardingGates.ContainsKey(boardingGate.GateName))
+            // Check if the boarding gate already exists using iteration
+            foreach (var existingGate in BoardingGates.Values)
             {
-                BoardingGates[boardingGate.GateName] = boardingGate;
-                return true;
+                if (existingGate.GateName == gate.GateName)
+                {
+                    return false; // Boarding gate already exists
+                }
             }
-            return false;
-        }
 
-        public Airline GetAirlineFromFlight(string flightNumber)
+            // Add the boarding gate
+            BoardingGates.Add(gate.GateName, gate);
+            return true;
+        }
+        public Airline GetAirlineFromFlight(Flight flight)
         {
+            // Find the airline that contains the given flight
             foreach (var airline in Airlines.Values)
             {
-                if (airline.Flights.ContainsKey(flightNumber))
-                    return airline;
+                foreach (var existingFlight in airline.Flights.Values)
+                {
+                    if (existingFlight.FlightNumber == flight.FlightNumber)
+                    {
+                        return airline;
+                    }
+                }
             }
-            return null;
+            return null; // Flight not associated with any airline
         }
 
         public void PrintAirlineFees()
@@ -56,10 +74,9 @@ namespace prg_asg_2
                 Console.WriteLine($"{airline.Name}: {airline.CalculateFees()}");
             }
         }
-
         public override string ToString()
         {
-            return $"Terminal: {TerminalName}, Airlines: {Airlines.Count}, Gates: {BoardingGates.Count}";
+            return $"Terminal: {TerminalName}, Airlines: {Airlines.Count}, Flights: {Flights.Count}, Boarding Gates: {BoardingGates.Count}";
         }
     }
 }
