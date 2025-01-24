@@ -6,10 +6,17 @@ using System.Threading.Tasks;
 
 namespace prg_asg_2
 {
-    internal class NORMFlight : Flight
+   public class NORMFlight : Flight
     {
+        // Constructor
         public NORMFlight(string flightNumber, string origin, string destination, DateTime expectedTime, string status)
-        : base(flightNumber, origin, destination, expectedTime, status) { }
+            : base(flightNumber, origin, destination, expectedTime, status) { }
+
+        // Implement CalculateFees
+        public override double CalculateFees()
+        {
+            return 100.0; // Example fixed fee for normal flights
+        }
 
         public override string ToString()
         {
