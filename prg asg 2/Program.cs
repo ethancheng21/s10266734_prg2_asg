@@ -151,10 +151,8 @@ class Program
                 Console.WriteLine($"Exception: {ex.Message}");
             }
         }
-
         return flights;
     }
-
     static void ListAllFlights(List<Flight> flights)
     {
         Console.WriteLine("=============================================");
@@ -167,7 +165,6 @@ class Program
             Console.WriteLine($"{flight.FlightNumber,-15}{flight.Airline?.Name,-25}{flight.Origin,-20}{flight.Destination,-20}{flight.ExpectedTime,-30:dd/MM/yyyy hh:mm tt}");
         }
     }
-
     static void ListBoardingGates(List<BoardingGate> boardingGates)
     {
         Console.WriteLine("=============================================");
