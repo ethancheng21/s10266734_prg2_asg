@@ -2,9 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-/// <summary>
-/// testststststst
-/// </summary>
+
 class Program
 {
     static void Main(string[] args)
