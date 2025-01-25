@@ -14,15 +14,17 @@ namespace prg_asg_2
         public string Destination { get; set; }
         public DateTime ExpectedTime { get; set; }
         public string Status { get; set; }
+        public Airline Airline { get; set; } // New property to link flights to airlines
 
         // Constructor
-        protected Flight(string flightNumber, string origin, string destination, DateTime expectedTime, string status)
+        protected Flight(string flightNumber, string origin, string destination, DateTime expectedTime, string status, Airline airline)
         {
             FlightNumber = flightNumber;
             Origin = origin;
             Destination = destination;
             ExpectedTime = expectedTime;
             Status = status;
+            Airline = airline;
         }
 
         // Abstract Method
@@ -30,7 +32,7 @@ namespace prg_asg_2
 
         public override string ToString()
         {
-            return $"Flight {FlightNumber}: {Origin} -> {Destination}, Status: {Status}, Expected: {ExpectedTime}";
+            return $"Flight {FlightNumber}: {Origin} -> {Destination}, Airline: {Airline?.Name ?? "Unknown"}, Status: {Status}, Expected: {ExpectedTime}";
         }
     }
 }

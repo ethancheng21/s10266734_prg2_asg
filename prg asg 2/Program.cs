@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-class Program
+class Program   
 {
     static void Main(string[] args)
     {
@@ -20,19 +20,13 @@ class Program
         var flights = LoadFlights("flights.csv", airlines);
         Console.WriteLine($"{flights.Count} Flights Loaded!");
 
-        Console.WriteLine("=============================================");
-        Console.WriteLine("Welcome to Changi Airport Terminal 5");
-        Console.WriteLine("=============================================");
-
         while (true)
         {
+            Console.WriteLine("=============================================");
+            Console.WriteLine("Welcome to Changi Airport Terminal 5");
+            Console.WriteLine("=============================================");
             Console.WriteLine("1. List All Flights");
             Console.WriteLine("2. List Boarding Gates");
-            Console.WriteLine("3. Assign a Boarding Gate to a Flight");
-            Console.WriteLine("4. Create Flight");
-            Console.WriteLine("5. Display Airline Flights");
-            Console.WriteLine("6. Modify Flight Details");
-            Console.WriteLine("7. Display Flight Schedule");
             Console.WriteLine("0. Exit");
             Console.Write("Please select your option: ");
 
@@ -42,6 +36,9 @@ class Program
             {
                 case "1":
                     ListAllFlights(flights);
+                    break;
+                case "2":
+                    ListBoardingGates(boardingGates);
                     break;
                 case "0":
                     return;
@@ -56,10 +53,16 @@ class Program
     {
         var airlines = new List<Airline>();
 
+        if (!File.Exists(filePath))
+        {
+            Console.WriteLine($"Error: Airlines file not found at {filePath}");
+            return airlines;
+        }
+
         foreach (var line in File.ReadLines(filePath).Skip(1))
         {
             var data = line.Split(',');
-            airlines.Add(new Airline(data[0], data[1]));
+            airlines.Add(new Airline(data[0].Trim(), data[1].Trim()));
         }
 
         return airlines;
@@ -68,15 +71,22 @@ class Program
     static List<BoardingGate> LoadBoardingGates(string filePath)
     {
         var boardingGates = new List<BoardingGate>();
-        var uniqueGateIds = new HashSet<string>();
+
+        if (!File.Exists(filePath))
+        {
+            Console.WriteLine($"Error: Boarding gates file not found at {filePath}");
+            return boardingGates;
+        }
 
         foreach (var line in File.ReadLines(filePath).Skip(1))
         {
             var data = line.Split(',');
-            if (uniqueGateIds.Add(data[0]))
-            {
-                boardingGates.Add(new BoardingGate(data[0], bool.Parse(data[1]), bool.Parse(data[2]), bool.Parse(data[3])));
-            }
+            boardingGates.Add(new BoardingGate(
+                data[0].Trim(),
+                bool.Parse(data[1].Trim()),
+                bool.Parse(data[2].Trim()),
+                bool.Parse(data[3].Trim())
+            ));
         }
 
         return boardingGates;
@@ -86,14 +96,59 @@ class Program
     {
         var flights = new List<Flight>();
 
-        foreach (var line in File.ReadLines(filePath).Skip(1))
+        if (!File.Exists(filePath))
         {
-            var data = line.Split(',');
+            Console.WriteLine($"Error: Flights file not found at {filePath}");
+            return flights;
+        }
 
-            var airline = airlines.FirstOrDefault(a => a.Code == data[1]);
-            if (airline != null)
+        int lineNumber = 0;
+
+        foreach (var line in File.ReadLines(filePath).Skip(1)) // Skip header row
+        {
+            lineNumber++;
+            try
             {
-                flights.Add(new Flight(data[0], airline, data[2], data[3], DateTime.Parse(data[4])));
+                var data = line.Split(',');
+
+                if (data.Length < 5) // Minimum columns required
+                {
+                    Console.WriteLine($"Skipping invalid line {lineNumber}: {line}");
+                    continue;
+                }
+
+                string flightNumber = data[0].Trim();
+                string airlineCode = flightNumber.Substring(0, 2); // Extract airline code from flight number
+                string origin = data[1].Trim();
+                string destination = data[2].Trim();
+                DateTime expectedTime = DateTime.ParseExact(data[3].Trim(), "h:mm tt", null); // Handle time format
+                string status = data.Length > 4 ? data[4].Trim() : "On Time";
+                string specialRequest = data.Length > 5 ? data[5].Trim() : null;
+                double requestFee = data.Length > 6 && double.TryParse(data[6].Trim(), out double fee) ? fee : 0.0;
+
+                var airline = airlines.FirstOrDefault(a => a.Code == airlineCode);
+                if (airline == null)
+                {
+                    Console.WriteLine($"Warning: Airline with code {airlineCode} not found. Skipping line {lineNumber}.");
+                    continue;
+                }
+
+                // Determine flight type
+                Flight flight = specialRequest switch
+                {
+                    "CFFT" => new CFFTFlight(flightNumber, origin, destination, expectedTime, status, requestFee, airline),
+                    "DDJB" => new DDJBFlight(flightNumber, origin, destination, expectedTime, status, requestFee, airline),
+                    "LWTT" => new LWTTFlight(flightNumber, origin, destination, expectedTime, status, requestFee, airline),
+                    _ => new NORMFlight(flightNumber, origin, destination, expectedTime, status, airline),
+                };
+
+                flights.Add(flight);
+                airline.Flights.Add(flight.FlightNumber, flight); // Link to airline
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error on line {lineNumber}: {line}");
+                Console.WriteLine($"Exception: {ex.Message}");
             }
         }
 
@@ -109,7 +164,20 @@ class Program
 
         foreach (var flight in flights)
         {
-            Console.WriteLine($"{flight.FlightNumber,-15}{flight.Airline.Name,-25}{flight.Origin,-20}{flight.Destination,-20}{flight.ExpectedDateTime,-30:dd/M/yyyy hh:mm:ss tt}");
+            Console.WriteLine($"{flight.FlightNumber,-15}{flight.Airline?.Name,-25}{flight.Origin,-20}{flight.Destination,-20}{flight.ExpectedTime,-30:dd/MM/yyyy hh:mm tt}");
+        }
+    }
+
+    static void ListBoardingGates(List<BoardingGate> boardingGates)
+    {
+        Console.WriteLine("=============================================");
+        Console.WriteLine("List of Boarding Gates for Changi Airport Terminal 5");
+        Console.WriteLine("=============================================");
+        Console.WriteLine($"{"Gate Name",-15}{"DDJB",-20}{"CFFT",-20}{"LWTT",-20}");
+
+        foreach (var gate in boardingGates)
+        {
+            Console.WriteLine($"{gate.GateName,-15}{gate.SupportsDDJB,-20}{gate.SupportsCFFT,-20}{gate.SupportsLWTT,-20}");
         }
     }
 }

@@ -8,17 +8,15 @@ namespace prg_asg_2
 {
     public class CFFTFlight : Flight
     {
-        // Additional Property
         public double RequestFee { get; set; }
 
         // Constructor
-        public CFFTFlight(string flightNumber, string origin, string destination, DateTime expectedTime, string status, double requestFee)
-            : base(flightNumber, origin, destination, expectedTime, status)
+        public CFFTFlight(string flightNumber, string origin, string destination, DateTime expectedTime, string status, double requestFee, Airline airline)
+            : base(flightNumber, origin, destination, expectedTime, status, airline)
         {
             RequestFee = requestFee;
         }
 
-        // Implement CalculateFees
         public override double CalculateFees()
         {
             return RequestFee + 150.0; // Base fee + request fee

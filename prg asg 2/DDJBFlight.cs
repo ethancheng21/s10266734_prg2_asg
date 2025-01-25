@@ -8,17 +8,15 @@ namespace prg_asg_2
 {
     public class DDJBFlight : Flight
     {
-        // Additional Property
         public double RequestFee { get; set; }
 
         // Constructor
-        public DDJBFlight(string flightNumber, string origin, string destination, DateTime expectedTime, string status, double requestFee)
-            : base(flightNumber, origin, destination, expectedTime, status)
+        public DDJBFlight(string flightNumber, string origin, string destination, DateTime expectedTime, string status, double requestFee, Airline airline)
+            : base(flightNumber, origin, destination, expectedTime, status, airline)
         {
             RequestFee = requestFee;
         }
 
-        // Implement CalculateFees
         public override double CalculateFees()
         {
             return RequestFee + 250.0; // Base fee + request fee
@@ -29,4 +27,5 @@ namespace prg_asg_2
             return base.ToString() + $" (DDJB Flight, Request Fee: {RequestFee})";
         }
     }
+
 }
