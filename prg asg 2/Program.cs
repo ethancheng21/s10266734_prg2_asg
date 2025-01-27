@@ -26,7 +26,6 @@ class Program
             Console.WriteLine("=============================================");
             Console.WriteLine("1. List All Flights");
             Console.WriteLine("2. List Boarding Gates");
-            Console.WriteLine("0. Exit");
             Console.WriteLine("3. Assign a Boarding Gate to a Flight");
             Console.WriteLine("4. Create Flight");
             Console.WriteLine("5. Display Airline Flights");
