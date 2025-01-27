@@ -27,12 +27,6 @@ class Program
             Console.WriteLine("1. List All Flights");
             Console.WriteLine("2. List Boarding Gates");
             Console.WriteLine("0. Exit");
-            Console.WriteLine("3. Assign a Boarding Gate to a Flight");
-            Console.WriteLine("4. Create Flight");
-            Console.WriteLine("5. Display Airline Flights");
-            Console.WriteLine("6. Modify Flight Details");
-            Console.WriteLine("7. Display Flight Schedule");
-            Console.WriteLine("0. Exit");
             Console.Write("Please select your option: ");
 
             var option = Console.ReadLine();
@@ -45,23 +39,7 @@ class Program
             {
                 ListBoardingGates(boardingGates);
             }
-            else if (option == "3")
-            {
-                break;
-            }
-            else if (option == "4")
-            {
-                break;
-            }
-            else if (option == "5")
-            {
-                break;
-            }
-            else if (option == "6")
-            {
-                break;
-            }
-            else if (option == "7")
+            else if (option == "0")
             {
                 return;
             }
@@ -160,7 +138,12 @@ class Program
             if (data.Length >= 5)
             {
                 string flightNumber = data[0];
-                string airlineCode = flightNumber.Length >= 2 ? flightNumber.Substring(0, 2) : "";
+                string airlineCode = "";
+                if (flightNumber.Length >= 2)
+                {
+                    airlineCode = flightNumber.Substring(0, 2);
+                }
+
                 string origin = data[1];
                 string destination = data[2];
                 DateTime expectedTime;
@@ -173,9 +156,21 @@ class Program
                 }
 
                 string status = data[4];
-                string specialRequest = data.Length > 5 ? data[5] : "";
+                string specialRequest = "";
+                if (data.Length > 5)
+                {
+                    specialRequest = data[5];
+                }
 
-                var airline = airlines.Find(a => a.Code == airlineCode);
+                Airline airline = null;
+                foreach (var a in airlines)
+                {
+                    if (a.Code == airlineCode)
+                    {
+                        airline = a;
+                        break;
+                    }
+                }
 
                 if (airline != null)
                 {
@@ -216,11 +211,11 @@ class Program
         foreach (var flight in flights)
         {
             Console.WriteLine(
-                $"{flight.FlightNumber,-15}" +
-                $"{flight.Airline.Name,-25}" +
-                $"{flight.Origin,-20}" +
-                $"{flight.Destination,-20}" +
-                $"{flight.ExpectedTime:dd/MM/yyyy hh:mm tt}");
+                flight.FlightNumber + new string(' ', 15 - flight.FlightNumber.Length) +
+                flight.Airline.Name + new string(' ', 25 - flight.Airline.Name.Length) +
+                flight.Origin + new string(' ', 20 - flight.Origin.Length) +
+                flight.Destination + new string(' ', 20 - flight.Destination.Length) +
+                flight.ExpectedTime.ToString("dd/MM/yyyy hh:mm tt"));
         }
     }
 
@@ -234,10 +229,10 @@ class Program
         foreach (var gate in boardingGates)
         {
             Console.WriteLine(
-                $"{gate.GateName,-15}" +
-                $"{gate.SupportsDDJB,-20}" +
-                $"{gate.SupportsCFFT,-20}" +
-                $"{gate.SupportsLWTT,-20}");
+                gate.GateName + new string(' ', 15 - gate.GateName.Length) +
+                gate.SupportsDDJB.ToString() + new string(' ', 20 - gate.SupportsDDJB.ToString().Length) +
+                gate.SupportsCFFT.ToString() + new string(' ', 20 - gate.SupportsCFFT.ToString().Length) +
+                gate.SupportsLWTT.ToString());
         }
     }
 }
