@@ -55,7 +55,7 @@ class Program
             }
             else if (option == "5")
             {
-                break;
+                DisplayAirlineFlights(airlines.ToDictionary(a => a.Code, a => a));
             }
             else if (option == "6")
             {
@@ -63,7 +63,7 @@ class Program
             }
             else if (option == "7")
             {
-                return;
+                DisplayScheduledFlights(flights, boardingGates.ToDictionary(g => g.GateName, g => g));
             }
             else
             {
@@ -157,7 +157,7 @@ class Program
                     continue;
                 }
 
-                string status = data[4];
+                string status = "Scheduled"; // Default status for all flights
                 string specialRequest = data.Length > 5 ? data[5] : "";
 
                 var airline = airlines.Find(a => a.Code == airlineCode);
@@ -190,6 +190,7 @@ class Program
 
         return flights;
     }
+
 
     static void ListAllFlights(List<Flight> flights)
     {
@@ -332,7 +333,88 @@ class Program
     }
 
 
+    static void DisplayAirlineFlights(Dictionary<string, Airline> airlines)
+    {
+        Console.WriteLine("=============================================");
+        Console.WriteLine("List of Airlines for Changi Airport Terminal 5");
+        Console.WriteLine("=============================================");
+        Console.WriteLine($"{"Airline Code",-15}{"Airline Name",-30}");
 
+        // List all airlines
+        foreach (var airline in airlines.Values)
+        {
+            Console.WriteLine($"{airline.Code,-15}{airline.Name,-30}");
+        }
+
+        // Prompt the user to enter the airline code
+        Console.Write("Enter Airline Code: ");
+        string airlineCode = Console.ReadLine()?.ToUpper();
+
+        if (!airlines.ContainsKey(airlineCode))
+        {
+            Console.WriteLine("Invalid Airline Code. Please try again.");
+            return;
+        }
+
+        var selectedAirline = airlines[airlineCode];
+
+        Console.WriteLine("=============================================");
+        Console.WriteLine($"List of Flights for {selectedAirline.Name}");
+        Console.WriteLine("=============================================");
+        Console.WriteLine($"{"Flight Number",-15}{"Airline Name",-25}{"Origin",-20}{"Destination",-20}{"Expected Departure/Arrival Time",-30}");
+
+        // List all flights for the selected airline
+        foreach (var flight in selectedAirline.Flights.Values)
+        {
+            Console.WriteLine($"{flight.FlightNumber,-15}" +
+                              $"{flight.Airline.Name,-25}" +
+                              $"{flight.Origin,-20}" +
+                              $"{flight.Destination,-20}" +
+                              $"{flight.ExpectedTime:dd/MM/yyyy hh:mm tt}");
+        }
+    }
+
+    static void DisplayScheduledFlights(List<Flight> flights, Dictionary<string, BoardingGate> boardingGates)
+    {
+        Console.WriteLine("=============================================");
+        Console.WriteLine("Flight Schedule for Changi Airport Terminal 5");
+        Console.WriteLine("=============================================");
+        Console.WriteLine(string.Format("{0,-15}{1,-25}{2,-20}{3,-20}{4,-30}{5,-15}{6,-15}",
+                          "Flight Number", "Airline Name", "Origin", "Destination",
+                          "Expected Departure/Arrival Time", "Status", "Boarding Gate"));
+
+        // Sort flights by ExpectedTime
+        flights.Sort();
+
+        foreach (var flight in flights)
+        {
+            // Default boarding gate is "Unassigned"
+            string boardingGateName = "Unassigned";
+
+            // Check if the flight is assigned to a boarding gate
+            foreach (var gate in boardingGates.Values)
+            {
+                if (gate.Flight != null && gate.Flight.FlightNumber == flight.FlightNumber)
+                {
+                    boardingGateName = gate.GateName;
+                    break;
+                }
+            }
+
+            // Normalize the status to "Scheduled" if it's the default
+            string status = flight.Status.Equals("Scheduled", StringComparison.OrdinalIgnoreCase) ? "Scheduled" : flight.Status;
+
+            // Print aligned flight details using string.Format
+            Console.WriteLine(string.Format("{0,-15}{1,-25}{2,-20}{3,-20}{4,-30}{5,-15}{6,-15}",
+                              flight.FlightNumber,
+                              flight.Airline?.Name ?? "Unknown",
+                              flight.Origin,
+                              flight.Destination,
+                              flight.ExpectedTime.ToString("dd/MM/yyyy h:mm:ss tt"),
+                              status,
+                              boardingGateName));
+        }
+    }
 
 
 

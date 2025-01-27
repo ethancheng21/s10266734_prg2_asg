@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace prg_asg_2
 {
-    public abstract class Flight
+    public abstract class Flight : IComparable<Flight>
     {
         // Properties
         public string FlightNumber { get; set; }
@@ -26,6 +26,15 @@ namespace prg_asg_2
             Status = status;
             Airline = airline;
         }
+        // Implement the CompareTo method
+        public int CompareTo(Flight other)
+        {
+            if (other == null) return 1;
+
+            // Compare flights based on their ExpectedTime
+            return ExpectedTime.CompareTo(other.ExpectedTime);
+        }
+
 
         // Abstract Method
         public abstract double CalculateFees();
