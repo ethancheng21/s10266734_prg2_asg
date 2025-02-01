@@ -170,7 +170,7 @@ class Program
                 string status = "Scheduled"; // Default status for all flights
                 string specialRequest = data.Length > 5 ? data[5] : "";
 
-                var airline = airlines.Find(a => a.Code == airlineCode);
+                airlines.TryGetValue(airlineCode, out var airline);
 
                 if (airline != null)
                 {
