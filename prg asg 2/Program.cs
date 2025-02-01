@@ -41,6 +41,22 @@ class Program
             }
             else if (option == "0")
             {
+                break;
+            }
+            else if (option == "4")
+            {
+                break;
+            }
+            else if (option == "5")
+            {
+                break;
+            }
+            else if (option == "6")
+            {
+                break;
+            }
+            else if (option == "7")
+            {
                 return;
             }
             else
@@ -81,39 +97,24 @@ class Program
         return airlines;
     }
 
-    static List<BoardingGate> LoadBoardingGates(string filePath)
+
+    static void ListBoardingGates(List<BoardingGate> boardingGates)
     {
-        var boardingGates = new List<BoardingGate>();
+        Console.WriteLine("=============================================");
+        Console.WriteLine("List of Boarding Gates for Changi Airport Terminal 5");
+        Console.WriteLine("=============================================");
+        Console.WriteLine("Gate Name       DDJB                   CFFT                   LWTT");
 
-        if (!File.Exists(filePath))
+        foreach (var gate in boardingGates)
         {
-            Console.WriteLine("Error: Boarding gates file not found.");
-            return boardingGates;
+            Console.WriteLine(
+                $"{gate.GateName,-15}" +
+                $"{gate.SupportsDDJB,-20}" +
+                $"{gate.SupportsCFFT,-20}" +
+                $"{gate.SupportsLWTT,-20}");
         }
-
-        bool isFirstRow = true; // Skip the header row
-        foreach (var line in File.ReadLines(filePath))
-        {
-            if (isFirstRow)
-            {
-                isFirstRow = false;
-                continue;
-            }
-
-            var data = line.Split(',');
-            if (data.Length >= 4)
-            {
-                string gateName = data[0];
-                bool supportsDDJB = data[1] == "true";
-                bool supportsCFFT = data[2] == "true";
-                bool supportsLWTT = data[3] == "true";
-
-                boardingGates.Add(new BoardingGate(gateName, supportsDDJB, supportsCFFT, supportsLWTT));
-            }
-        }
-
-        return boardingGates;
     }
+
 
     static List<Flight> LoadFlights(string filePath, List<Airline> airlines)
     {
@@ -219,20 +220,134 @@ class Program
         }
     }
 
-    static void ListBoardingGates(List<BoardingGate> boardingGates)
+
+    static List<BoardingGate> LoadBoardingGates(string filePath)
+    {
+        var boardingGates = new List<BoardingGate>();
+
+        if (!File.Exists(filePath))
+        {
+            Console.WriteLine("Error: Boarding gates file not found.");
+            return boardingGates;
+        }
+
+        bool isFirstRow = true; // Skip the header row
+        foreach (var line in File.ReadLines(filePath))
+        {
+            if (isFirstRow)
+            {
+                isFirstRow = false;
+                continue;
+            }
+
+            var data = line.Split(',');
+            if (data.Length >= 4)
+            {
+                string gateName = data[0].Trim();
+                bool supportsDDJB = string.Equals(data[1].Trim(), "True", StringComparison.OrdinalIgnoreCase);
+                bool supportsCFFT = string.Equals(data[2].Trim(), "True", StringComparison.OrdinalIgnoreCase);
+                bool supportsLWTT = string.Equals(data[3].Trim(), "True", StringComparison.OrdinalIgnoreCase);
+
+                boardingGates.Add(new BoardingGate(gateName, supportsCFFT, supportsDDJB, supportsLWTT));
+            }
+        }
+
+        return boardingGates;
+    }
+
+
+
+
+
+    static void AssignBoardingGate(Dictionary<string, Flight> flights, Dictionary<string, BoardingGate> boardingGates)
     {
         Console.WriteLine("=============================================");
-        Console.WriteLine("List of Boarding Gates for Changi Airport Terminal 5");
+        Console.WriteLine("Assign a Boarding Gate to a Flight");
         Console.WriteLine("=============================================");
-        Console.WriteLine("Gate Name       DDJB                   CFFT                   LWTT");
 
-        foreach (var gate in boardingGates)
+        // Prompt the user for the Flight Number
+        Console.Write("Enter Flight Number: ");
+        string flightNumber = Console.ReadLine()?.ToUpper();
+
+        // Prompt the user for the Boarding Gate immediately after entering the Flight Number
+        Console.Write("Enter Boarding Gate Name: ");
+        string gateName = Console.ReadLine()?.ToUpper();
+
+        if (flights.TryGetValue(flightNumber, out var selectedFlight))
+        {
+            // Display the basic information of the selected Flight
+            Console.WriteLine($"Flight Number: {selectedFlight.FlightNumber}");
+            Console.WriteLine($"Origin: {selectedFlight.Origin}");
+            Console.WriteLine($"Destination: {selectedFlight.Destination}");
+            Console.WriteLine($"Expected Time: {selectedFlight.ExpectedTime:dd/MM/yyyy hh:mm tt}");
+            Console.WriteLine($"Special Request Code: {(selectedFlight is CFFTFlight ? "CFFT" :
+                                                            selectedFlight is DDJBFlight ? "DDJB" :
+                                                            selectedFlight is LWTTFlight ? "LWTT" : "None")}");
+
+            if (boardingGates.TryGetValue(gateName, out var selectedGate))
+            {
+                if (selectedGate.Flight == null)
+                {
+                    // Display Boarding Gate Details
+                    Console.WriteLine($"Boarding Gate Name: {gateName}");
+                    Console.WriteLine($"Supports DDJB: {selectedGate.SupportsDDJB}");
+                    Console.WriteLine($"Supports CFFT: {selectedGate.SupportsCFFT}");
+                    Console.WriteLine($"Supports LWTT: {selectedGate.SupportsLWTT}");
+
+                    // Assign the gate to the flight
+                    selectedGate.Flight = selectedFlight;
+
+                    // Prompt to update flight status
+                    Console.Write("Would you like to update the status of the flight? (Y/N): ");
+                    string updateStatus = Console.ReadLine()?.ToUpper();
+
+                    if (updateStatus == "Y")
+                    {
+                        Console.WriteLine("1. Delayed");
+                        Console.WriteLine("2. Boarding");
+                        Console.WriteLine("3. On Time");
+                        Console.Write("Please select the new status of the flight: ");
+                        string statusOption = Console.ReadLine();
+
+                        if (statusOption == "1")
+                            selectedFlight.Status = "Delayed";
+                        else if (statusOption == "2")
+                            selectedFlight.Status = "Boarding";
+                        else if (statusOption == "3")
+                            selectedFlight.Status = "On Time";
+                        else
+                            Console.WriteLine("Invalid option. Status set to default: On Time.");
+                    }
+                    else
+                    {
+                        selectedFlight.Status = "On Time";
+                    }
+
+                    Console.WriteLine($"Flight {selectedFlight.FlightNumber} has been assigned to Boarding Gate {gateName}!");
+                }
+                else
+                {
+                    Console.WriteLine($"Boarding Gate {gateName} is already assigned to Flight {selectedGate.Flight.FlightNumber}.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Invalid Boarding Gate. Please try again.");
+            }
+        }
+        else
         {
             Console.WriteLine(
-                gate.GateName + new string(' ', 15 - gate.GateName.Length) +
-                gate.SupportsDDJB.ToString() + new string(' ', 20 - gate.SupportsDDJB.ToString().Length) +
-                gate.SupportsCFFT.ToString() + new string(' ', 20 - gate.SupportsCFFT.ToString().Length) +
-                gate.SupportsLWTT.ToString());
+                $"{gate.GateName,-15}" +
+                $"{gate.SupportsDDJB,-20}" +
+                $"{gate.SupportsCFFT,-20}" +
+                $"{gate.SupportsLWTT,-20}");
         }
     }
+
+
+
+
+
+
 }
