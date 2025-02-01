@@ -248,7 +248,7 @@ class Program
                 $"{flight.Airline.Name,-25}" +
                 $"{flight.Origin,-20}" +
                 $"{flight.Destination,-20}" +
-                $"{flight.ExpectedTime:dd/MM/yyyy hh:mm tt}");
+                $"{flight.ExpectedTime:dd/MM/yyyy hh:mm:ss tt}");
         }
     }
 
