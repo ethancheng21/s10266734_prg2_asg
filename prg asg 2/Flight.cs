@@ -37,8 +37,10 @@ namespace prg_asg_2
 
 
         // Abstract Method
-        public abstract double CalculateFees();
-
+        public virtual double CalculateFees()
+        {
+            return 0.0; // Default fee calculation (overridden in subclasses)
+        }
         public override string ToString()
         {
             return $"Flight {FlightNumber}: {Origin} -> {Destination}, Airline: {Airline?.Name ?? "Unknown"}, Status: {Status}, Expected: {ExpectedTime}";

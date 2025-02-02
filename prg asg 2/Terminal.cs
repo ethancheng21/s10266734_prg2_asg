@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace prg_asg_2
 {
-    internal class Terminal
+    public class Terminal
     {
         public string TerminalName { get; set; }
         public Dictionary<string, Airline> Airlines { get; set; } = new Dictionary<string, Airline>();

@@ -57,14 +57,44 @@ namespace prg_asg_2
         public double CalculateFees()
         {
             double totalFees = 0.0;
+            int totalFlights = Flights.Count;
 
-            // Iterate through the flights and sum their fees
+            // Base fees from flights
             foreach (var flight in Flights.Values)
             {
                 totalFees += flight.CalculateFees();
             }
 
-            return totalFees;
+            // Apply promotions in correct order
+            double discount = 0.0;
+
+            // 1. Apply the 3% off total bill if eligible (Before other discounts)
+            if (totalFlights > 5)
+            {
+                discount += totalFees * 0.03; // 3% of total fees before other deductions
+            }
+
+            // 2. Apply other stackable discounts
+            discount += (totalFlights / 3) * 350; // $350 for every 3 flights
+            foreach (var flight in Flights.Values)
+            {
+                if (flight.ExpectedTime.Hour < 11 || flight.ExpectedTime.Hour > 21)
+                {
+                    discount += 110; // $110 for early/late flights
+                }
+
+                if (flight.Origin == "DXB" || flight.Origin == "BKK" || flight.Origin == "NRT")
+                {
+                    discount += 25; // $25 for flights from DXB, BKK, NRT
+                }
+
+                if (flight is NORMFlight)
+                {
+                    discount += 50; // $50 for normal flights with no special request
+                }
+            }
+
+            return Math.Max(0, totalFees - discount); // Ensure total cannot be negative
         }
 
         public override string ToString()
